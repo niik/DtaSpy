@@ -47,8 +47,6 @@ namespace DtaSpy
 
         private IEnumerable<BizTalkTrackedMessagePartFragment> LoadFragments()
         {
-            var fragments = new List<BizTalkTrackedMessagePartFragment>();
-
             int startFragment = 1;
 
             if (ImagePart != null)
@@ -77,8 +75,6 @@ namespace DtaSpy
 
                 yield return fragment;
             }
-
-            _fragments = fragments;
         }
 
         /// <summary>
