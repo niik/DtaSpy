@@ -55,7 +55,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\DtaSpy\DtaSpy.csproj">
+    <ProjectReference Include="..\DtaSpy\DtaSpy.csproj">
       <Project>{1B44420E-8102-4D98-B35B-D5BF7392EFD3}</Project>
       <Name>DtaSpy</Name>
     </ProjectReference>
