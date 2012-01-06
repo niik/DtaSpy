@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3CA880EF-58AF-4DBC-BB08-C107B85A631E}"
+	ProjectSection(SolutionItems) = preProject
+		DtaSpy.testsettings = DtaSpy.testsettings
+		DtaSpy.vsmdi = DtaSpy.vsmdi
+		LICENSE.txt = LICENSE.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtaSpy", "src\DtaSpy\DtaSpy.csproj", "{1B44420E-8102-4D98-B35B-D5BF7392EFD3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{AB144965-AF69-4250-A8D2-2799EFFEF50A}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtaSpy.Tests", "DtaSpy.Tests\DtaSpy.Tests.csproj", "{2A1E3601-ADED-4411-A6A4-D7362BDBA136}"
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = DtaSpy.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Debug|x86.ActiveCfg = Debug|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Debug|x86.Build.0 = Debug|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Release|Any CPU.ActiveCfg = Release|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Release|Mixed Platforms.Build.0 = Release|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Release|x86.ActiveCfg = Release|x86
+		{1B44420E-8102-4D98-B35B-D5BF7392EFD3}.Release|x86.Build.0 = Release|x86
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2A1E3601-ADED-4411-A6A4-D7362BDBA136}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AB144965-AF69-4250-A8D2-2799EFFEF50A} = {3CA880EF-58AF-4DBC-BB08-C107B85A631E}
+	EndGlobalSection
+EndGlobal
