@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{AB1449
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtaSpy.Tests", "DtaSpy.Tests\DtaSpy.Tests.csproj", "{2A1E3601-ADED-4411-A6A4-D7362BDBA136}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtaSpy.Tests", "src\DtaSpy.Tests\DtaSpy.Tests.csproj", "{2A1E3601-ADED-4411-A6A4-D7362BDBA136}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
