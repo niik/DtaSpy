@@ -11,7 +11,7 @@ The official way of retrieving tracked messages is the [BizTalkOperations.GetTra
  * Retrieve and decode message contexts (properties) [Experimental]
 
 ## How does it work?
-All the stored procedures and tables neccessary to retrieve messages and properties are available in the DTA databases. The problem is that the data returned from theese procs aren't exactly in plain text. The data may or may not be compressed and if the tracked data is large enough it may be split over several fragments.
+All the stored procedures and tables necessary to retrieve messages and properties are available in the DTA databases. The problem is that the data returned from theese procs aren't exactly in plain text. The data may or may not be compressed and if the tracked data is large enough it may be split over several fragments.
 
 By reverse-engineering the storage format DtaSpy is able to decode tracked messages without the need of BizTalk.Operations or other BizTalk components. All it needs is System.Data and SharpZipLib.
 
@@ -27,7 +27,7 @@ A bit thin at the moment. Check [the wiki](https://github.com/markus-olsson/DtaS
 There's a sample project included in the solution called DtaSpy.Samples.Export. It's a console application that exports message parts and contexts. It's very much a quick hack to demonstrate the library but it's a good place to start.
 
 ## LICENSE
-[MIT License](https://github.com/markus-olsson/DtaSpy/blob/master/LICENSE.txt)
+DtaSpy is licensed under the [MIT License](https://github.com/markus-olsson/DtaSpy/blob/master/LICENSE.txt) ([OSI](http://www.opensource.org/licenses/mit-license.php)). Basically you're free to do whatever you want with it. Attribution not necessary but appreciated.
 
 ## Dependencies
 DtaSpy currently only depends on [SharpZipLib](http://www.icsharpcode.net/opensource/sharpziplib/). DtaSpy resolves this reference using NuGet and the project is set up to use NuGet package restore.
