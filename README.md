@@ -1,7 +1,7 @@
 # DtaSpy
 Standalone access (as in no BizTalk installation neccessary) to tracked messages and properties in BizTalk tracking databases.
 
-There's been several attempts at exporting tracked messages and properties from BizTalk DTA (Document Tracking and Administration) databases (see [3 ways of programmatically extracting a message body from the BizTalk tracking database](http://connectedthoughts.wordpress.com/2008/04/02/3-ways-of-programatically-extracting-a-message-body-from-the-biztalk-tracking-database/). Until now there's been no project which did not have a dependency on BizTalk.
+There's been several attempts at exporting tracked messages and properties from BizTalk DTA (Document Tracking and Administration) databases (see [3 ways of programmatically extracting a message body from the BizTalk tracking database](http://connectedthoughts.wordpress.com/2008/04/02/3-ways-of-programatically-extracting-a-message-body-from-the-biztalk-tracking-database/)). Until now there's been no project which did not have a dependency on BizTalk.
 
 The official way of retrieving tracked messages is the [BizTalkOperations.GetTrackedMessage method](http://technet.microsoft.com/en-us/library/aa957609.aspx) but that requires a local BizTalk installation and it's not possible to copy the operations assembly since BizTalk depends on all sorts of COM+ support libraries and classes installed alongside BizTalk.
 
