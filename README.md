@@ -13,7 +13,7 @@ The official way of retrieving tracked messages is the [BizTalkOperations.GetTra
 ## How does it work?
 All the stored procedures and tables necessary to retrieve messages and properties are available in the DTA databases. The problem is that the data returned from theese procs aren't exactly in plain text. The data may or may not be compressed and if the tracked data is large enough it may be split over several fragments.
 
-By reverse-engineering the storage format DtaSpy is able to decode tracked messages without the need of BizTalk.Operations or other BizTalk components. All it needs is System.Data and SharpZipLib.
+By reverse-engineering the storage format DtaSpy is able to decode tracked messages without the need for BizTalk.Operations or other BizTalk components. All it needs is System.Data and SharpZipLib.
 
 ## Disclaimer
 I have never had access to a BizTalk installation. I was approached by a friend who works extensively with BizTalk who asked me to reverse engineer the data in the tracking database. 
