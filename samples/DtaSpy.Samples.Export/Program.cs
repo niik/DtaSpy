@@ -76,7 +76,7 @@ namespace DtaSpy.Samples.Export
             int partNo = 1;
             foreach (var part in message.Parts)
             {
-                Console.Error.WriteLine("Exporting " + message.MessageId + " part " + partNo + " of " + message.PartCount);
+                Console.Error.WriteLine("Exporting {" + message.MessageId + "} part " + partNo + " of " + message.PartCount);
 
                 using (var fs = File.OpenWrite(GetMessagePartExportFilename(message, part)))
                     part.WriteTo(fs, false);
@@ -91,7 +91,7 @@ namespace DtaSpy.Samples.Export
         /// </summary>
         private static void ExportContext(BizTalkTrackedMessage message)
         {
-            Console.Error.WriteLine("Exporting " + message.MessageId + " context");
+            Console.Error.WriteLine("Exporting {" + message.MessageId + "} context");
 
             using (var context = db.LoadTrackedMessageContext(message.MessageId, message.SpoolId))
             using (var writer = new XmlTextWriter(GetMessageContextExportFilename(message), Encoding.UTF8))
