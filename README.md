@@ -31,3 +31,5 @@ DtaSpy is licensed under the [MIT License](https://github.com/markus-olsson/DtaS
 
 ## Dependencies
 DtaSpy currently only depends on [SharpZipLib](http://www.icsharpcode.net/opensource/sharpziplib/). DtaSpy resolves this reference using NuGet and the project is set up to use NuGet package restore.
+
+DtaSpy was originally written in .NET 4.0 but since there was so little work being done with .NET 4 specific stuff I backported it to .NET 2.0. It still runs fine on 4.0 though.
