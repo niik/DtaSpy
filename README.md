@@ -19,7 +19,7 @@ By reverse-engineering the storage format DtaSpy is able to decode tracked messa
 I have never had access to a BizTalk installation. I was approached by a friend who works extensively with BizTalk who asked me to reverse engineer the data in the tracking database. 
 He sent me a copy of the tracked data as well as the tracked message in its original format and I worked my way back from there. So while I've accumulated some knowledge about the data formats in DTA databases I'm still a complete idiot when it comes to BizTalk in general. Don't expect any help there :)
 
-The usual disclaimers apply as well, although it won't mess up anything (since it's read-only for now) your mileage may vary as you may encounter
+The usual disclaimers apply as well, although it won't mess up anything (since it's read-only for now) your mileage may vary as you may encounter corner-cases. Reading of message contexts is, for example, still a bit experimental. If you encounter any bugs of odd behavior please file an [issue](https://github.com/markus-olsson/DtaSpy/issues).
 
 ## Documentation
 A bit thin at the moment. Check [the wiki](https://github.com/markus-olsson/DtaSpy/wiki) for updates.
