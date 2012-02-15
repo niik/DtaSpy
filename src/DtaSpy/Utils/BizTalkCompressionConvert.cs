@@ -9,36 +9,38 @@ namespace DtaSpy
     /// </summary>
     public static class BizTalkCompressionConvert
     {
+        /// <summary>
+        /// Extracts the given tracking data and returns the decompressed content as a byte array
+        /// </summary>
         public static byte[] Decompress(byte[] buffer)
         {
             using (var source = new MemoryStream(buffer))
-            using (var decoder = new BizTalkFragmentStream(source, CompressionMode.Decompress))
-            using (var reader = new BinaryReader(decoder))
+            using (var destination = new MemoryStream())
             {
-                return reader.ReadBytes(buffer.Length * 2);
+                DecompressTo(source, destination);
+                
+                return destination.ToArray();
             }
         }
 
+        /// <summary>
+        /// Extracts the tracking data withing the given stream and returns the 
+        /// decompressed content as a byte array
+        /// </summary>
         public static byte[] Decompress(Stream source)
         {
-            using (var decoder = new BizTalkFragmentStream(source, CompressionMode.Decompress))
-            using (var reader = new BinaryReader(decoder))
             using (var ms = new MemoryStream())
             {
-                byte[] buffer = new byte[8192];
-                int read;
-
-                do
-                {
-                    read = decoder.Read(buffer, 0, buffer.Length);
-                    ms.Write(buffer, 0, read);
-                }
-                while (read > 0);
-
+                DecompressTo(source, ms);
+                
                 return ms.ToArray();
             }
         }
 
+        /// <summary>
+        /// Extracts the tracking data withing the given source stream and writes the
+        /// decompressed content into the given destination stream.
+        /// </summary>
         public static int DecompressTo(Stream source, Stream destination)
         {
             if (source == null)
@@ -63,20 +65,6 @@ namespace DtaSpy
                 while (read > 0);
 
                 return total;
-            }
-        }
-
-        public static int DecompressTo(string sourcePath, string destinationPath)
-        {
-            return DecompressTo(sourcePath, destinationPath, false);
-        }
-
-        public static int DecompressTo(string sourcePath, string destinationPath, bool append)
-        {
-            using (var source = File.OpenRead(sourcePath))
-            using (var destination = new FileStream(destinationPath, append ? FileMode.Append : FileMode.Create))
-            {
-                return DecompressTo(source, destination);
             }
         }
     }
