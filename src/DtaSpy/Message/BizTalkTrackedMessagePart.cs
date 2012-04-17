@@ -27,15 +27,15 @@ namespace DtaSpy
 
         public Guid OldPartId { get; set; }
 
-        private List<BizTalkTrackedMessagePartFragment> _fragments;
+        private List<BizTalkFragment> _fragments;
 
-        public List<BizTalkTrackedMessagePartFragment> Fragments
+        public List<BizTalkFragment> Fragments
         {
             get
             {
                 if (_fragments == null)
                 {
-                    _fragments = new List<BizTalkTrackedMessagePartFragment>();
+                    _fragments = new List<BizTalkFragment>();
 
                     foreach (var fragment in LoadFragments())
                         _fragments.Add(fragment);
@@ -45,14 +45,14 @@ namespace DtaSpy
             }
         }
 
-        private IEnumerable<BizTalkTrackedMessagePartFragment> LoadFragments()
+        private IEnumerable<BizTalkFragment> LoadFragments()
         {
             int startFragment = 1;
 
             if (ImagePart != null)
             {
                 // We already have the first fragment
-                yield return new BizTalkTrackedMessagePartFragment(this.db, this.spoolId)
+                yield return new BizTalkFragment(this.db, this.spoolId)
                 {
                     ImagePart = this.ImagePart
                 };
@@ -103,7 +103,7 @@ namespace DtaSpy
         {
             int total = 0;
 
-            IEnumerable<BizTalkTrackedMessagePartFragment> fragments;
+            IEnumerable<BizTalkFragment> fragments;
 
             if (!cacheFragments || this._fragments != null)
                 fragments = this.Fragments;

@@ -2,12 +2,12 @@
 
 namespace DtaSpy
 {
-    public class BizTalkTrackedMessagePartFragment : IDisposable
+    public class BizTalkFragment : IDisposable
     {
         private BizTalkTrackingDb bizTalkTrackingDb;
         private int spoolId;
 
-        public BizTalkTrackedMessagePartFragment(BizTalkTrackingDb bizTalkTrackingDb, int spoolId)
+        public BizTalkFragment(BizTalkTrackingDb bizTalkTrackingDb, int spoolId)
         {
             // TODO: Complete member initialization
             this.bizTalkTrackingDb = bizTalkTrackingDb;

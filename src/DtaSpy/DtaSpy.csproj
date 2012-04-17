@@ -54,7 +54,7 @@
     <Compile Include="Message\BizTalkTrackedMessage.cs" />
     <Compile Include="Context\BizTalkTrackedMessageContext.cs" />
     <Compile Include="Message\BizTalkTrackedMessagePart.cs" />
-    <Compile Include="Message\BizTalkTrackedMessagePartFragment.cs" />
+    <Compile Include="Message\BizTalkFragment.cs" />
     <Compile Include="Utils\BizTalkCompressionConvert.cs" />
     <Compile Include="IO\BizTalkFragmentStream.cs" />
     <Compile Include="Data\BizTalkTrackingDb.cs" />

@@ -257,7 +257,7 @@ namespace DtaSpy
         /// <param name="partId">The part id.</param>
         /// <param name="fragmentNumber">The fragment number.</param>
         /// <param name="spoolId">The spool id.</param>
-        public BizTalkTrackedMessagePartFragment LoadTrackedPartFragment(Guid partId, int fragmentNumber, int spoolId)
+        public BizTalkFragment LoadTrackedPartFragment(Guid partId, int fragmentNumber, int spoolId)
         {
             using (var connection = new SqlConnection(this.ConnectionString))
             using (var cmd = CreateStoredProcedureCommand(connection, "ops_LoadTrackedPartFragment"))
@@ -273,7 +273,7 @@ namespace DtaSpy
                     if (!reader.Read())
                         return null;
 
-                    var fragment = new BizTalkTrackedMessagePartFragment(this, spoolId);
+                    var fragment = new BizTalkFragment(this, spoolId);
 
                     fragment.ImagePart = (byte[])reader.GetValue(0);
 
