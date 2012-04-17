@@ -22,6 +22,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using ICSharpCode.SharpZipLib.Zip.Compression;
 
 namespace DtaSpy
 {
@@ -30,66 +31,24 @@ namespace DtaSpy
     /// </summary>
     public class BizTalkFragmentStream : Stream
     {
-        /// <summary>
-        /// Fragment streams consists of one or more of what I've come to call blocks which
-        /// in turn consists of a header describing the block, it's compression mode (on/off),
-        /// it's length (compressed and uncompressed).
-        /// </summary>
-        private sealed class Block : IDisposable
-        {
-            /// <summary>
-            /// Gets or sets a value indicating whether this <see cref="Block"/> is compressed.
-            /// </summary>
-            public bool Compressed { get; set; }
+        private const int MaxBlockSize = 35840;
 
-            /// <summary>
-            /// Gets or sets the length of the block in bytes
-            /// </summary>
-            public int Length { get; set; }
-
-            /// <summary>
-            /// Gets or sets the length of the block contents. If this block is not 
-            /// compressed this will be the same as the Length of the block and if it
-            /// is compressed it will be the uncompressed length.
-            /// </summary>
-            public int UncompressedLength { get; set; }
-
-            /// <summary>
-            /// Gets or sets the content part of this block (ie, the block bytes excluding it's header)
-            /// </summary>
-            public Stream Content { get; set; }
-
-            /// <summary>
-            /// Gets or sets the number of read bytes in this block
-            /// </summary>
-            public int Read { get; set; }
-
-            public bool IsEmpty
-            {
-                get { return (this.Length == 0) && (this.UncompressedLength == 0); }
-            }
-
-            public Block(bool compressed, int length, int uncompressedLength, Stream content)
-            {
-                this.Compressed = compressed;
-                this.Length = length;
-                this.UncompressedLength = uncompressedLength;
-                this.Content = content;
-            }
-
-            public void Dispose()
-            {
-                this.Content.Dispose();
-            }
-        }
-
+        private bool isOutputStarted;
         private bool isClosed;
         private bool isDone;
 
-        private Block currentBlock;
+        private FragmentBlock currentBlock;
+        private MemoryStream readBuffer;
+
+        private MemoryStream writeBuffer;
+        private MemoryStream deflateBuffer;
+
+        private BizTalkFragmentBlockWriter writer;
+        private BizTalkFragmentBlockReader reader;
 
         private Stream innerStream;
         private CompressionMode compressionMode;
+        private int currentBlockRead;
 
         /// <summary>
         /// Gets a value indicating whether the current stream supports reading.
@@ -119,14 +78,14 @@ namespace DtaSpy
         }
 
         /// <summary>
-        /// Gets the length in bytes of the stream. Not supported by BizTalkCompressionStream.
+        /// Gets the length in bytes of the stream. Not supported by BizTalkFragmentStream.
         /// </summary>
         /// <exception cref="T:System.NotSupportedException">A class derived from Stream does not support seeking.</exception>
         /// <exception cref="T:System.ObjectDisposedException">Methods were called after the stream was closed.</exception>
         public override long Length { get { throw new NotSupportedException(); } }
 
         /// <summary>
-        /// Gets or sets the position within the current stream. Not supported by BizTalkCompressionStream.
+        /// Gets or sets the position within the current stream. Not supported by BizTalkFragmentStream.
         /// </summary>
         /// <exception cref="T:System.NotSupportedException">The stream does not support seeking.</exception>
         public override long Position
@@ -142,14 +101,25 @@ namespace DtaSpy
         /// <param name="mode">The compression mode.</param>
         public BizTalkFragmentStream(Stream stream, CompressionMode mode)
         {
-            if (mode == CompressionMode.Compress)
-                throw new NotSupportedException("Compression is not yet supported by this stream");
-
-            if (mode != CompressionMode.Decompress)
-                throw new ArgumentException("Unknown compression mode specified: " + mode, "mode");
-
             this.innerStream = stream;
             this.compressionMode = mode;
+
+            if (mode == CompressionMode.Compress)
+            {
+                this.writer = new BizTalkFragmentBlockWriter(this.innerStream);
+
+                this.writeBuffer = new MemoryStream();
+                this.deflateBuffer = new MemoryStream();
+            }
+            else if (mode == CompressionMode.Decompress)
+            {
+                this.reader = new BizTalkFragmentBlockReader(stream);
+                this.readBuffer = new MemoryStream();
+            }
+            else
+            {
+                throw new ArgumentException("Unknown compression mode specified: " + mode, "mode");
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -161,7 +131,7 @@ namespace DtaSpy
                 return 0;
 
             if (this.currentBlock == null)
-                this.currentBlock = this.ReadBlock();
+                this.ReadBlock();
 
             if (this.currentBlock.IsEmpty)
             {
@@ -170,77 +140,72 @@ namespace DtaSpy
                 return 0;
             }
 
-            int read = this.currentBlock.Content.Read(buffer, offset, count);
+            int read = this.readBuffer.Read(buffer, offset, count);
 
             if (read == 0)
             {
-                if (this.currentBlock.Compressed && (this.currentBlock.Read != this.currentBlock.UncompressedLength))
+                if (this.currentBlock.Compressed && (this.currentBlockRead != this.currentBlock.UncompressedLength))
                     throw new IOException("Uncompressed block size did not match actual content length");
 
-                this.currentBlock.Dispose();
                 this.currentBlock = null;
+                this.currentBlockRead = 0;
 
                 return this.Read(buffer, offset, count);
             }
 
-            this.currentBlock.Read += read;
+            this.currentBlockRead += read;
 
             return read;
         }
 
-        private Block ReadBlock()
+        private void ReadBlock()
         {
-            bool compressed = this.innerStream.ReadByte() == 1;
+            this.currentBlock = this.reader.ReadBlock();
 
-            // I don't know what these bytes represent
-            this.innerStream.ReadByte();
-            this.innerStream.ReadByte();
-            this.innerStream.ReadByte();
-
-            // 16bit little endian
-            int uncompressedLength = this.innerStream.ReadByte() + (this.innerStream.ReadByte() << 8);
-
-            // I don't know what these bytes represent
-            this.innerStream.ReadByte();
-            this.innerStream.ReadByte();
-
-            // 16bit little endian
-            int length = this.innerStream.ReadByte() + (this.innerStream.ReadByte() << 8);
-
-            // I don't know what these bytes represent
-            this.innerStream.ReadByte();
-            this.innerStream.ReadByte();
-
-            Stream contentStream = null;
-
-            if (length > 0)
+            if (this.currentBlock.IsEmpty)
             {
-                int read;
-                byte[] blockBuffer = new byte[length];
-                int total = 0;
-
-                do
-                {
-                    read = this.innerStream.Read(blockBuffer, total, blockBuffer.Length - total);
-                    total += read;
-                }
-                while (read > 0);
-
-                contentStream = new MemoryStream(blockBuffer);
-
-                if (compressed)
-                    contentStream = new InflaterInputStream(contentStream);
+                this.readBuffer = new MemoryStream();
+                return;
             }
 
-            return new Block(compressed, length, uncompressedLength, contentStream);
+            if (this.currentBlock.Compressed)
+            {
+                byte[] buffer = new byte[this.currentBlock.UncompressedLength];
+
+                var inflater = new Inflater();
+
+                inflater.SetInput(this.currentBlock.Content);
+                inflater.Inflate(buffer);
+
+                this.readBuffer = new MemoryStream(buffer);
+            }
+            else
+            {
+                this.readBuffer = new MemoryStream(this.currentBlock.Content);
+            }
         }
 
         public override void Close()
         {
             base.Close();
 
-            if (this.currentBlock != null)
-                this.currentBlock.Dispose();
+            if (this.isClosed)
+                return;
+
+            if (this.compressionMode == CompressionMode.Decompress)
+            {
+                if (this.currentBlock != null)
+                    this.currentBlock = null;
+            }
+            else if (this.compressionMode == CompressionMode.Compress)
+            {
+                this.FlushBuffer();
+
+                if (isOutputStarted)
+                    WriteBlock(false, 0, 0, new byte[0] { });
+
+                this.innerStream.Flush();
+            }
 
             this.isClosed = true;
         }
@@ -249,6 +214,8 @@ namespace DtaSpy
         {
             if (this.compressionMode != CompressionMode.Compress)
                 throw new InvalidOperationException("Cannot flush decompression stream");
+
+            FlushBuffer();
 
             this.innerStream.Flush();
         }
@@ -268,7 +235,89 @@ namespace DtaSpy
             if (this.compressionMode != CompressionMode.Compress)
                 throw new InvalidOperationException("Cannot write to compression stream");
 
-            throw new NotImplementedException();
+            if (buffer == null)
+                throw new ArgumentNullException("buffer");
+
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number");
+
+            if (count < 0)
+                throw new ArgumentOutOfRangeException("count", "Count cannot be a negative number");
+
+            if ((buffer.Length - offset) < count)
+                throw new ArgumentException("Offset and count would exceed buffer lenght");
+
+            while (count > 0)
+            {
+                int written = 0;
+
+                if (this.writeBuffer.Length + count > MaxBlockSize)
+                {
+                    this.writeBuffer.Write(buffer, offset, MaxBlockSize);
+                    written = MaxBlockSize;
+                }
+                else
+                {
+                    this.writeBuffer.Write(buffer, offset, count);
+                    written = count;
+                }
+
+                count -= written;
+                offset += written;
+
+                if (this.writeBuffer.Length == MaxBlockSize)
+                    FlushBuffer();
+            }
+        }
+
+        private void FlushBuffer()
+        {
+            if (this.writeBuffer == null)
+                return;
+
+            if (this.writeBuffer.Length == 0)
+                return;
+
+            // Brute force testing indicates that BizTalk never compressed content under 513 bytes
+            if (this.writeBuffer.Length > 512)
+            {
+                this.deflateBuffer.SetLength(0);
+
+                // Important, we wan't to match the RFC 1950 header used by BizTalk
+                // see http://stackoverflow.com/questions/1316357/zlib-decompression-in-python
+                var deflater = new Deflater(9);
+
+                using (var deflateStream = new DeflaterOutputStream(this.deflateBuffer, deflater) { IsStreamOwner = false })
+                    this.writeBuffer.WriteTo(deflateStream);
+
+                // Don't use the deflated content if it won't save space (ie random data). This is mostly an 
+                // optimization (which BizTalk performs as well) but it's also important that we don't exceed the
+                // maximum block size.
+                if (deflateBuffer.Length < this.writeBuffer.Length)
+                {
+                    WriteBlock(true, (int)this.deflateBuffer.Length, (int)this.writeBuffer.Length, this.deflateBuffer.ToArray());
+                    ClearBuffer();
+                    return;
+                }
+            }
+
+            WriteBlock(false, (int)this.writeBuffer.Length, (int)this.writeBuffer.Length, this.writeBuffer.ToArray());
+            ClearBuffer();
+        }
+
+        private void ClearBuffer()
+        {
+            this.writeBuffer.SetLength(0);
+        }
+
+        private void WriteBlock(bool compressed, int length, int uncompressedLength, byte[] buffer)
+        {
+            if (!this.isOutputStarted)
+                this.isOutputStarted = true;
+
+            var block = new FragmentBlock(compressed, length, uncompressedLength, buffer);
+
+            this.writer.WriteBlock(block);
         }
     }
 }

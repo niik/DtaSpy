@@ -51,6 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IO\BizTalkMessageContextReader.cs" />
+    <Compile Include="IO\BizTalkFragmentBlockWriter.cs" />
+    <Compile Include="Message\BizTalkFragmentBlock.cs" />
+    <Compile Include="IO\BizTalkFragmentBlockReader.cs" />
     <Compile Include="Message\BizTalkTrackedMessage.cs" />
     <Compile Include="Context\BizTalkTrackedMessageContext.cs" />
     <Compile Include="Message\BizTalkTrackedMessagePart.cs" />

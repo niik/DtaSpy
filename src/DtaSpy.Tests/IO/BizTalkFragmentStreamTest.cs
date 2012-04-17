@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 
 namespace DtaSpy.Tests
 {
@@ -80,46 +81,100 @@ namespace DtaSpy.Tests
         [TestMethod]
         public void CompressedSingleBlockStructureTest()
         {
-            using (var ms = new MemoryStream(singleBlock1024XBuffer))
-            {
-                var bs = new BizTalkFragmentStream_Accessor(ms, CompressionMode.Decompress);
+            var reader = new BizTalkFragmentBlockReader(singleBlock1024XBuffer);
 
-                var b1 = bs.ReadBlock();
-                Assert.IsNotNull(b1);
-                Assert.AreEqual(1024, b1.UncompressedLength);
+            var b1 = reader.ReadBlock();
+            Assert.IsNotNull(b1);
+            Assert.AreEqual(1024, b1.UncompressedLength);
 
-                var b2 = bs.ReadBlock();
-                Assert.IsNotNull(b2);
-                Assert.AreEqual(0, b2.UncompressedLength);
-                Assert.IsTrue(b2.IsEmpty);
-            }
+            var b2 = reader.ReadBlock();
+            Assert.IsNotNull(b2);
+            Assert.AreEqual(0, b2.UncompressedLength);
+            Assert.IsTrue(b2.IsEmpty);
         }
 
         [TestMethod]
         public void CompressedMultiBlockStructureTest()
         {
-            using (var ms = new MemoryStream(doubleBlock65535XBuffer))
+            var reader = new BizTalkFragmentBlockReader(doubleBlock65535XBuffer);
+
+            var b1 = reader.ReadBlock();
+            Assert.IsNotNull(b1);
+            Assert.IsTrue(b1.Compressed);
+            Assert.AreEqual(58, b1.Length);
+            Assert.AreEqual(35840, b1.UncompressedLength);
+
+            var b2 = reader.ReadBlock();
+            Assert.IsNotNull(b2);
+            Assert.IsTrue(b2.Compressed);
+            Assert.AreEqual(53, b2.Length);
+            Assert.AreEqual(29696, b2.UncompressedLength);
+
+            var b3 = reader.ReadBlock();
+            Assert.IsNotNull(b3);
+            Assert.IsFalse(b3.Compressed);
+            Assert.AreEqual(0, b3.UncompressedLength);
+            Assert.IsTrue(b3.IsEmpty);
+        }
+
+        [TestMethod]
+        public void WriteUncompressedTest()
+        {
+            // To small content to get compressed
+            var content = new string('X', 100);
+            byte[] buffer;
+
+            using (var ms = new MemoryStream())
             {
-                var bs = new BizTalkFragmentStream_Accessor(ms, CompressionMode.Decompress);
+                using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Compress))
+                using (var sw = new StreamWriter(bz))
+                {
+                    sw.Write(content);
+                }
 
-                var b1 = bs.ReadBlock();
-                Assert.IsNotNull(b1);
-                Assert.IsTrue(b1.Compressed);
-                Assert.AreEqual(58, b1.Length);
-                Assert.AreEqual(35840, b1.UncompressedLength);
-
-                var b2 = bs.ReadBlock();
-                Assert.IsNotNull(b2);
-                Assert.IsTrue(b2.Compressed);
-                Assert.AreEqual(53, b2.Length);
-                Assert.AreEqual(29696, b2.UncompressedLength);
-
-                var b3 = bs.ReadBlock();
-                Assert.IsNotNull(b3);
-                Assert.IsFalse(b3.Compressed);
-                Assert.AreEqual(0, b3.UncompressedLength);
-                Assert.IsTrue(b3.IsEmpty);
+                buffer = ms.ToArray();
             }
+
+            // Compression bit should not be set
+            Assert.AreEqual(0, buffer[0]);
+
+            using (var ms = new MemoryStream(buffer))
+            using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Decompress))
+            using (var sr = new StreamReader(bz))
+            {
+                Assert.AreEqual(content, sr.ReadToEnd());
+            }
+
+        }
+
+        [TestMethod]
+        public void WriteCompressedTest()
+        {
+            // To small content to get compressed
+            var content = new string('X', 1024);
+            byte[] buffer;
+
+            using (var ms = new MemoryStream())
+            {
+                using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Compress))
+                using (var sw = new StreamWriter(bz))
+                {
+                    sw.Write(content);
+                }
+
+                buffer = ms.ToArray();
+            }
+
+            // Compression bit should not be set
+            Assert.AreEqual(1, buffer[0]);
+
+            using (var ms = new MemoryStream(buffer))
+            using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Decompress))
+            using (var sr = new StreamReader(bz))
+            {
+                Assert.AreEqual(content, sr.ReadToEnd());
+            }
+
         }
     }
 }
