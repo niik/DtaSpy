@@ -38,7 +38,7 @@ namespace DtaSpy
         }
 
         /// <summary>
-        /// Extracts the tracking data withing the given source stream and writes the
+        /// Extracts the tracking data within the given source stream and writes the
         /// decompressed content into the given destination stream.
         /// </summary>
         public static int DecompressTo(Stream source, Stream destination)

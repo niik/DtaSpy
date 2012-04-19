@@ -79,7 +79,7 @@ namespace DtaSpy
 
         /// <summary>
         /// Writes the decoded contents of all fragments to the given stream while caching
-        /// loaded fragments for future access. Not caching improved memory usage and may improve
+        /// loaded fragments for future access. Not caching improves memory usage and may improve
         /// performance so if you're never going to access the fragments after this call, please use
         /// the overload which allows you to specify whether to cache or not.
         /// </summary>
@@ -90,7 +90,7 @@ namespace DtaSpy
 
         /// <summary>
         /// Writes the decoded contents of all fragments to the given stream, optionally caching
-        /// loaded fragments for future access. Not caching improved memory usage and may improve
+        /// loaded fragments for future access. Not caching improves memory usage and may improve
         /// performance. Don't cache if you're never going to access the fragments after. Caching
         /// has no effect if fragments already have been loaded for this message part.
         /// </summary>
