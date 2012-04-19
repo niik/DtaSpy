@@ -5,10 +5,10 @@ using System.Diagnostics;
 
 namespace DtaSpy
 {
-    public class BizTalkFragmentBlockWriter
+    public class BizTalkFragmentBlockWriter: IBlockWriter
     {
-        private Stream source;
-        private static readonly byte[] zeroBuf = new byte[] { 0, 0, 0};
+        public Stream output { get; set; }
+        private static readonly byte[] zeroBuf = new byte[] { 0, 0, 0 };
 
         public BizTalkFragmentBlockWriter(Stream output)
         {
@@ -17,55 +17,65 @@ namespace DtaSpy
 
         public void WriteBlock(FragmentBlock block)
         {
+            WriteBlock(block.Content, 0, block.Length, block.Compressed, block.UncompressedLength);
+        }
+
+        public void WriteBlock(byte[] buffer, int offset, int count, bool compressed, int uncompressedLength)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException("buffer");
+
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number");
+
+            if (count < 0)
+                throw new ArgumentOutOfRangeException("count", "Count cannot be a negative number");
+
+            if ((buffer.Length - offset) < count)
+                throw new ArgumentException("Offset and count would exceed buffer lenght");
+
             var bw = new BinaryWriter(this.output);
 
-            bw.Write(block.Compressed);
+            bw.Write(compressed);
 
             // I don't know what these bytes represent
             bw.Write(zeroBuf, 0, 3);
 
             // Content length (uncompressed length) 16bit little endian
-            bw.Write((ushort)block.UncompressedLength);
+            bw.Write((ushort)uncompressedLength);
 
             // I don't know what these bytes represent
             bw.Write(zeroBuf, 0, 2);
 
             // 16bit little endian
-            bw.Write((ushort)block.Length);
+            bw.Write((ushort)count);
 
             // I don't know what these bytes represent
             bw.Write(zeroBuf, 0, 2);
 
-            if (block.Length > 0)
-                this.output.Write(block.Content, 0, block.Length);
+            if (count > 0)
+                this.output.Write(buffer, offset, count);
         }
 
-        private byte ReadHeaderByte(params byte[] validValues)
+        public void Flush()
         {
-            byte b = ReadHeaderByte();
-
-            if (validValues != null && Array.IndexOf(validValues, b) == -1)
-                throw new FormatException("Malformed block header");
-
-            return (byte)b;
+            this.output.Flush();
         }
 
-        private byte ReadHeaderByte()
+        public void Dispose()
         {
-            int b = this.source.ReadByte();
-
-            if (b == -1)
-                throw new EndOfStreamException();
-
-            return (byte)b;
+            this.Dispose(true);
         }
 
-        private void ReadAssumedEmptyHeaderByte()
+        protected virtual void Dispose(bool disposing)
         {
-            byte b = ReadHeaderByte();
-            Debug.Assert(b == 0, "This byte is not yet mapped by DtaSpy and is expected to be zero. Please get in touch or build in release mode to disable this assert.");
+            if (disposing)
+                this.output.Close();
         }
 
-        public Stream output { get; set; }
+        public void Close()
+        {
+            this.Dispose(true);
+        }
     }
 }

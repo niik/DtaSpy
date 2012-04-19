@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="IO\BizTalkMessageContextReader.cs" />
     <Compile Include="IO\BizTalkFragmentBlockWriter.cs" />
+    <Compile Include="IBlockWriter.cs" />
     <Compile Include="Message\BizTalkFragmentBlock.cs" />
     <Compile Include="IO\BizTalkFragmentBlockReader.cs" />
     <Compile Include="Message\BizTalkTrackedMessage.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Data\BizTalkTrackingDb.cs" />
     <Compile Include="Context\BizTalkTrackedMessageContextProperty.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="IO\BizTalkStreamFragmenter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

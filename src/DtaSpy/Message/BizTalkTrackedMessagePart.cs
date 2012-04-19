@@ -52,10 +52,7 @@ namespace DtaSpy
             if (ImagePart != null)
             {
                 // We already have the first fragment
-                yield return new BizTalkFragment(this.db, this.spoolId)
-                {
-                    ImagePart = this.ImagePart
-                };
+                yield return new BizTalkFragment { ImagePart = this.ImagePart };
 
                 // Don't load fragment #1 from db, we already have it.
                 startFragment = 2;

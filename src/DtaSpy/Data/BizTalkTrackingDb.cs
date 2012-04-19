@@ -273,7 +273,7 @@ namespace DtaSpy
                     if (!reader.Read())
                         return null;
 
-                    var fragment = new BizTalkFragment(this, spoolId);
+                    var fragment = new BizTalkFragment();
 
                     fragment.ImagePart = (byte[])reader.GetValue(0);
 

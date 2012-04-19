@@ -33,17 +33,14 @@ namespace DtaSpy
     {
         private const int MaxBlockSize = 35840;
 
-        private bool isOutputStarted;
         private bool isClosed;
         private bool isDone;
 
         private FragmentBlock currentBlock;
         private MemoryStream readBuffer;
 
-        private MemoryStream writeBuffer;
-        private MemoryStream deflateBuffer;
-
         private BizTalkFragmentBlockWriter writer;
+        private BizTalkStreamFragmenter fragmenter;
         private BizTalkFragmentBlockReader reader;
 
         private Stream innerStream;
@@ -107,9 +104,7 @@ namespace DtaSpy
             if (mode == CompressionMode.Compress)
             {
                 this.writer = new BizTalkFragmentBlockWriter(this.innerStream);
-
-                this.writeBuffer = new MemoryStream();
-                this.deflateBuffer = new MemoryStream();
+                this.fragmenter = new BizTalkStreamFragmenter(this.writer);
             }
             else if (mode == CompressionMode.Decompress)
             {
@@ -199,12 +194,7 @@ namespace DtaSpy
             }
             else if (this.compressionMode == CompressionMode.Compress)
             {
-                this.FlushBuffer();
-
-                if (isOutputStarted)
-                    WriteBlock(false, 0, 0, new byte[0] { });
-
-                this.innerStream.Flush();
+                this.fragmenter.Close();
             }
 
             this.isClosed = true;
@@ -215,9 +205,7 @@ namespace DtaSpy
             if (this.compressionMode != CompressionMode.Compress)
                 throw new InvalidOperationException("Cannot flush decompression stream");
 
-            FlushBuffer();
-
-            this.innerStream.Flush();
+            this.fragmenter.Flush();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -235,89 +223,7 @@ namespace DtaSpy
             if (this.compressionMode != CompressionMode.Compress)
                 throw new InvalidOperationException("Cannot write to compression stream");
 
-            if (buffer == null)
-                throw new ArgumentNullException("buffer");
-
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset", "Offset cannot be a negative number");
-
-            if (count < 0)
-                throw new ArgumentOutOfRangeException("count", "Count cannot be a negative number");
-
-            if ((buffer.Length - offset) < count)
-                throw new ArgumentException("Offset and count would exceed buffer lenght");
-
-            while (count > 0)
-            {
-                int written = 0;
-
-                if (this.writeBuffer.Length + count > MaxBlockSize)
-                {
-                    this.writeBuffer.Write(buffer, offset, MaxBlockSize);
-                    written = MaxBlockSize;
-                }
-                else
-                {
-                    this.writeBuffer.Write(buffer, offset, count);
-                    written = count;
-                }
-
-                count -= written;
-                offset += written;
-
-                if (this.writeBuffer.Length == MaxBlockSize)
-                    FlushBuffer();
-            }
-        }
-
-        private void FlushBuffer()
-        {
-            if (this.writeBuffer == null)
-                return;
-
-            if (this.writeBuffer.Length == 0)
-                return;
-
-            // Brute force testing indicates that BizTalk never compressed content under 513 bytes
-            if (this.writeBuffer.Length > 512)
-            {
-                this.deflateBuffer.SetLength(0);
-
-                // Important, we wan't to match the RFC 1950 header used by BizTalk
-                // see http://stackoverflow.com/questions/1316357/zlib-decompression-in-python
-                var deflater = new Deflater(9);
-
-                using (var deflateStream = new DeflaterOutputStream(this.deflateBuffer, deflater) { IsStreamOwner = false })
-                    this.writeBuffer.WriteTo(deflateStream);
-
-                // Don't use the deflated content if it won't save space (ie random data). This is mostly an 
-                // optimization (which BizTalk performs as well) but it's also important that we don't exceed the
-                // maximum block size.
-                if (deflateBuffer.Length < this.writeBuffer.Length)
-                {
-                    WriteBlock(true, (int)this.deflateBuffer.Length, (int)this.writeBuffer.Length, this.deflateBuffer.ToArray());
-                    ClearBuffer();
-                    return;
-                }
-            }
-
-            WriteBlock(false, (int)this.writeBuffer.Length, (int)this.writeBuffer.Length, this.writeBuffer.ToArray());
-            ClearBuffer();
-        }
-
-        private void ClearBuffer()
-        {
-            this.writeBuffer.SetLength(0);
-        }
-
-        private void WriteBlock(bool compressed, int length, int uncompressedLength, byte[] buffer)
-        {
-            if (!this.isOutputStarted)
-                this.isOutputStarted = true;
-
-            var block = new FragmentBlock(compressed, length, uncompressedLength, buffer);
-
-            this.writer.WriteBlock(block);
+            this.fragmenter.Write(buffer, offset, count);
         }
     }
 }
