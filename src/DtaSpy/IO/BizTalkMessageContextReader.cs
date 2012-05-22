@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace DtaSpy
@@ -67,7 +69,7 @@ namespace DtaSpy
             Debug.Assert(isArrayByte == 0 || isArrayByte == 1);
             bool isArray = isArrayByte == 1;
 
-            byte valueType = reader.ReadByte();
+            VarEnum valueType = (VarEnum)reader.ReadByte();
             byte ignored = reader.ReadByte();
 
             Debug.Assert(ignored == 0 || (isArray && ignored == 0x20));
@@ -78,7 +80,7 @@ namespace DtaSpy
             return ReadValue(valueType);
         }
 
-        private object ReadArray(byte elementType)
+        private object ReadArray(VarEnum elementType)
         {
             // I'm guessing this is the number of dimensions but I'm really not sure.
             short dimensions = reader.ReadInt16();
@@ -97,46 +99,66 @@ namespace DtaSpy
             return valueArray;
         }
 
-        private Type GetManagedType(byte valueType)
+        private Type GetManagedType(VarEnum valueType)
         {
             switch (valueType)
             {
-                case 3:
-                    return typeof(int);
-                case 7:
-                    return typeof(DateTime);
-                case 8:
-                    return typeof(string);
-                case 11:
-                    return typeof(bool);
-                case 19:
-                    return typeof(uint);
+                case VarEnum.VT_I2: return typeof(short);
+                case VarEnum.VT_I4: return typeof(int);
+                case VarEnum.VT_R4: return typeof(float);
+                case VarEnum.VT_R8: return typeof(double);
+                case VarEnum.VT_DATE: return typeof(DateTime);
+                case VarEnum.VT_BSTR: return typeof(string);
+                case VarEnum.VT_BOOL: return typeof(bool);
+                case VarEnum.VT_DECIMAL: return typeof(string);
+                case VarEnum.VT_I1: return typeof(sbyte);
+                case VarEnum.VT_UI1: return typeof(byte);
+                case VarEnum.VT_UI2: return typeof(ushort);
+                case VarEnum.VT_UI4: return typeof(uint);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        private object ReadValue(byte valueType)
+        private object ReadValue(VarEnum valueType)
         {
-            // I believe the valut types either map directly to variant types as specified in
-            // http://en.wikipedia.org/wiki/Variant_type#Types or some preceeding standard.
-            // It seems to coincide perfectly so far but we're still lacking support for floats
-            // and some other types since I haven't seen any such types in message contexts yet.
+            // I believe the value types map roughly to the variant types as specified in
+            // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380072(v=vs.85).aspx
             switch (valueType)
             {
-                case 3:
-                    return ReadInt32();
-                case 7:
-                    return ReadDateTime();
-                case 8:
-                    return ReadLengthPrefixedString();
-                case 11:
-                    return ReadBoolean();
-                case 19:
-                    return ReadUInt32();
+                case VarEnum.VT_I2: return reader.ReadInt16();
+                case VarEnum.VT_I4: return reader.ReadInt32();
+                case VarEnum.VT_R4: return reader.ReadSingle();
+                case VarEnum.VT_R8: return reader.ReadDouble();
+                // case 6: VT_CY: 8-byte two's complement integer (scaled by 10,000). This type is commonly used for currency amounts.
+                case VarEnum.VT_DATE: return ReadDateTime();
+                case VarEnum.VT_BSTR: return ReadLengthPrefixedString();
+                // case 9: VT_DISPATCH
+                // case 10: VT_ERROR
+                case VarEnum.VT_BOOL: return ReadBoolean();
+                // case 12: VT_VARIANT 
+                // case 13: VT_UNKNOWN
+                case VarEnum.VT_DECIMAL: return ReadDecimal();
+                // case 15: Unused
+                case VarEnum.VT_I1: return reader.ReadSByte();
+                case VarEnum.VT_UI1: return reader.ReadByte();
+                case VarEnum.VT_UI2: return reader.ReadUInt16();
+                case VarEnum.VT_UI4: return reader.ReadUInt32();
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        private decimal ReadDecimal()
+        {
+            // Okay, this freaks me out. All the other types codes I've seen seems to map directly to the VarEnum
+            // enum and thus to the corresponding VT_ types. By that logic we should be seeing a VT_DECIMAL struct
+            // here (http://blogs.microsoft.co.il/blogs/arik/archive/2009/10/16/setting-decimal-value-on-propvariant.aspx)
+            // but as far as I can tell it's a BSTR. I don't know if we should bubble it up the chain as a string
+            // or not. We need more data on this. If you end up here it'd be swell if you could provide some sample
+            // data with more complex decimals.
+            
+             return decimal.Parse(ReadLengthPrefixedString(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
         }
 
         private bool ReadBoolean()
@@ -152,16 +174,6 @@ namespace DtaSpy
                 return false;
 
             throw new FormatException();
-        }
-
-        private int ReadInt32()
-        {
-            return reader.ReadInt32();
-        }
-
-        private uint ReadUInt32()
-        {
-            return reader.ReadUInt32();
         }
 
         private DateTime ReadDateTime()
