@@ -8,7 +8,9 @@ The official way of retrieving tracked messages is the [BizTalkOperations.GetTra
 ## What can it do?
 
  * Retrieve and decode message parts (most notably the message body)
- * Retrieve and decode message contexts (properties) [Experimental]
+ * Retrieve and decode message contexts (properties)
+ * Serialize and fragment custom messages (write-support) [EXPERIMENTAL, WIP]
+ * Serialize custom message contexts
 
 ## How does it work?
 All the stored procedures and tables necessary to retrieve messages and properties are available in the DTA databases. The problem is that the data returned from theese procs aren't exactly in plain text. The data may or may not be compressed and if the tracked data is large enough it may be split over several fragments.
@@ -25,6 +27,17 @@ The usual disclaimers apply as well, although it won't mess up anything (since i
 A bit thin at the moment. Check [the wiki](https://github.com/markus-olsson/DtaSpy/wiki) for updates.
 
 There's a sample project included in the solution called DtaSpy.Samples.Export. It's a console application that exports message parts and contexts. It's very much a quick hack to demonstrate the library but it's a good place to start.
+
+### API Sample
+
+    var db = new BizTalkTrackingDb(connectionString);
+    var message = db.LoadTrackedMessages().Take(10);
+    
+    foreach(var message in messages)
+    {
+        using (var fs = File.OpenWrite(message.MessageId + ".raw"))
+            message.BodyPart.WriteTo(fs, false);
+    }
 
 ## LICENSE
 DtaSpy is licensed under the [MIT License](https://github.com/markus-olsson/DtaSpy/blob/master/LICENSE.txt) ([OSI](http://www.opensource.org/licenses/mit-license.php)). Basically you're free to do whatever you want with it. Attribution not necessary but appreciated.
