@@ -7,10 +7,10 @@ The official way of retrieving tracked messages is the [BizTalkOperations.GetTra
 
 ## What can it do?
 
- * Retrieve and decode message parts (most notably the message body)
- * Retrieve and decode message contexts (properties)
- * Serialize and fragment custom messages (write-support) [EXPERIMENTAL, WIP]
- * Serialize custom message contexts
+ * Retrieve and decode message parts (most notably the message body) [STABLE]
+ * Retrieve and decode message contexts (properties) [BETA]
+ * Serialize and fragment custom messages (write-support) [EXPERIMENTAL]
+ * Serialize custom message contexts [EXPERIMENTAL]
 
 ## How does it work?
 All the stored procedures and tables necessary to retrieve messages and properties are available in the DTA databases. The problem is that the data returned from theese procs aren't exactly in plain text. The data may or may not be compressed and if the tracked data is large enough it may be split over several fragments.
