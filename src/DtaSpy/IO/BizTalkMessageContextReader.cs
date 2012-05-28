@@ -27,7 +27,7 @@ namespace DtaSpy
             this.reader = new BinaryReader(stream);
         }
 
-        public IEnumerable<BizTalkTrackedMessageContextProperty> ReadContext()
+        public virtual IEnumerable<BizTalkTrackedMessageContextProperty> ReadContext()
         {
             var clsid = new Guid(reader.ReadBytes(16));
 
@@ -39,7 +39,7 @@ namespace DtaSpy
             Debug.Assert(clsid == new Guid("6c90e0c4-4918-11d3-a242-00c04f60a533"));
 
             int namespaceCount = reader.ReadInt32();
-
+            
             for (int i = 0; i < namespaceCount; i++)
             {
                 string ns = ReadLengthPrefixedString();
@@ -53,12 +53,11 @@ namespace DtaSpy
                 {
                     string propertyName = ReadLengthPrefixedString();
 
-                    int unknown = reader.ReadInt32();
-                    Debug.Assert(unknown == 1 || unknown == 2 || unknown == 16);
+                    ContextPropertyType propertyType = (ContextPropertyType)this.reader.ReadInt32();
 
                     object value = ReadValue();
 
-                    yield return new BizTalkTrackedMessageContextProperty(ns, propertyName, value);
+                    yield return new BizTalkTrackedMessageContextProperty(ns, propertyName, value, propertyType);
                 }
             }
         }
@@ -72,6 +71,10 @@ namespace DtaSpy
             VarEnum valueType = (VarEnum)reader.ReadByte();
             byte ignored = reader.ReadByte();
 
+            // This 0x20 thing has something to do with VT_ARRAY (0x2000) and little endian
+            // and something else but 0x2001 would suggest that VarEnum is a flag and if that's
+            // the case then 0x2001 would be VT_ARRAY | VT_NULL which might make sense but I
+            // just don't know enough yet.
             Debug.Assert(ignored == 0 || (isArray && ignored == 0x20));
 
             if (isArray)
@@ -82,13 +85,16 @@ namespace DtaSpy
 
         private object ReadArray(VarEnum elementType)
         {
-            // I'm guessing this is the number of dimensions but I'm really not sure.
-            short dimensions = reader.ReadInt16();
+            // The layout seems to match that of a ARRAYDESC with its SAFEARRAYBOUND
+            // http://msdn.microsoft.com/en-us/library/aa908862
+            // http://msdn.microsoft.com/en-us/library/aa917627
+
+            ushort dimensions = reader.ReadUInt16();
             Debug.Assert(dimensions == 1);
 
             int length = reader.ReadInt32();
 
-            int lowerBound = reader.ReadInt32(); // Lower bound is just a guess, I really don't know what else it could be though
+            int lowerBound = reader.ReadInt32();
             Debug.Assert(lowerBound == 0);
 
             Array valueArray = Array.CreateInstance(GetManagedType(elementType), length);
@@ -124,6 +130,8 @@ namespace DtaSpy
         {
             // I believe the value types map roughly to the variant types as specified in
             // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380072(v=vs.85).aspx
+            // It maps even more closely to the subset specified in
+            // http://msdn.microsoft.com/en-us/library/ms897140.aspx (Windows CE 5.0 documentation)
             switch (valueType)
             {
                 case VarEnum.VT_I2: return reader.ReadInt16();
@@ -181,7 +189,7 @@ namespace DtaSpy
             // Epic! Fought like crazy to get this to work using my own 
             // reverse-engineered hackish solution and it turns out .net has
             // built-in support for OLE-dates :)
-            return DateTime.FromOADate(reader.ReadDouble());
+            return DateTime.FromOADate(this.reader.ReadDouble());
         }
 
         private string ReadLengthPrefixedString()
@@ -198,6 +206,19 @@ namespace DtaSpy
 
         public void Dispose()
         {
+            this.Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (this.stream != null)
+                {
+                    this.stream.Close();
+                    this.stream = null;
+                }
+            }
         }
     }
 }
