@@ -54,6 +54,7 @@
     <Compile Include="IO\BizTalkMessageContextReader.cs" />
     <Compile Include="IO\BizTalkFragmentBlockWriter.cs" />
     <Compile Include="IBlockWriter.cs" />
+    <Compile Include="IO\BizTalkMessageContextWriter.cs" />
     <Compile Include="Message\BizTalkFragmentBlock.cs" />
     <Compile Include="IO\BizTalkFragmentBlockReader.cs" />
     <Compile Include="Message\BizTalkTrackedMessage.cs" />
