@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace DtaSpy
 {
-    public class BizTalkFragmentBlockWriter: IBlockWriter
+    public class BizTalkFragmentBlockWriter : IBlockWriter
     {
         public Stream output { get; set; }
         private static readonly byte[] zeroBuf = new byte[] { 0, 0, 0 };
@@ -36,22 +36,13 @@ namespace DtaSpy
 
             var bw = new BinaryWriter(this.output);
 
-            bw.Write(compressed);
+            bw.Write((int)(compressed ? 1 : 0));
 
-            // I don't know what these bytes represent
-            bw.Write(zeroBuf, 0, 3);
+            // Content length (uncompressed length) 32bit little endian
+            bw.Write((int)uncompressedLength);
 
-            // Content length (uncompressed length) 16bit little endian
-            bw.Write((ushort)uncompressedLength);
-
-            // I don't know what these bytes represent
-            bw.Write(zeroBuf, 0, 2);
-
-            // 16bit little endian
-            bw.Write((ushort)count);
-
-            // I don't know what these bytes represent
-            bw.Write(zeroBuf, 0, 2);
+            // 32bit little endian
+            bw.Write((int)count);
 
             if (count > 0)
                 this.output.Write(buffer, offset, count);
