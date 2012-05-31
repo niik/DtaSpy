@@ -18,9 +18,9 @@ namespace DtaSpy.Tests.IO
             var rawContext = ResourceHelper.LoadTestResource("Context/IM.BizTalk.Schemas.All.AllPropertiesSet/1.1/9c38fa72-868f-46aa-8a73-8d00da713700.bin");
 
             using (rawContext)
-            using (var reader = new BizTalkMessageContextReader(rawContext))
+            using (var reader = new BizTalkContextReader(rawContext))
             {
-                var properties = reader.ReadContext().ToList();
+                var properties = reader.ReadContextProperties().ToList();
 
                 Assert.AreEqual(60, properties.Count);
 

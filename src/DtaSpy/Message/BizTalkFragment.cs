@@ -2,7 +2,7 @@
 
 namespace DtaSpy
 {
-    public class BizTalkFragment : IDisposable
+    public class BizTalkFragment
     {
         public BizTalkFragment()
         {
@@ -10,11 +10,5 @@ namespace DtaSpy
 
         public byte[] ImagePart { get; set; }
         public int FragmentNumber { get; set; }
-
-        public void Dispose()
-        {
-            this.ImagePart = null;
-        }
-
     }
 }

@@ -11,7 +11,7 @@ namespace DtaSpy
     /// Experimental context writer. Blind inverted implementation of the
     /// context reader, please refer to it for documentation and/or guidance.
     /// </summary>
-    public class BizTalkMessageContextWriter : IDisposable
+    public class BizTalkContextWriter : IDisposable
     {
         private Stream stream;
         private BinaryWriter writer;
@@ -19,33 +19,33 @@ namespace DtaSpy
         private static readonly byte[] PropertyContextClassId = new Guid("6c90e0c4-4918-11d3-a242-00c04f60a533").ToByteArray();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BizTalkMessageContextWriter"/> class.
+        /// Initializes a new instance of the <see cref="BizTalkContextWriter"/> class.
         /// </summary>
         /// <param name="stream">The stream.</param>
-        public BizTalkMessageContextWriter(Stream stream)
+        public BizTalkContextWriter(Stream stream)
         {
             this.stream = stream;
             this.writer = new BinaryWriter(stream);
         }
 
-        public virtual void WriteContext(BizTalkTrackedMessageContext context)
+        public virtual void WriteContext(BizTalkPropertyBag context)
         {
             this.WriteContext(context.Properties);
         }
 
-        public virtual void WriteContext(IEnumerable<BizTalkTrackedMessageContextProperty> properties)
+        public virtual void WriteContext(IEnumerable<BizTalkContextProperty> properties)
         {
             // I'm guessing namespaces are always lower case (since they're uris) and even if they're not I'll treat them as such.
-            var propertiesByNamespace = new Dictionary<string, List<BizTalkTrackedMessageContextProperty>>(StringComparer.OrdinalIgnoreCase);
+            var propertiesByNamespace = new Dictionary<string, List<BizTalkContextProperty>>(StringComparer.OrdinalIgnoreCase);
             var namespacesInOrderOfAppearance = new List<string>();
 
             foreach (var property in properties)
             {
-                List<BizTalkTrackedMessageContextProperty> pl;
+                List<BizTalkContextProperty> pl;
 
                 if (!propertiesByNamespace.TryGetValue(property.Namespace, out pl))
                 {
-                    pl = new List<BizTalkTrackedMessageContextProperty>();
+                    pl = new List<BizTalkContextProperty>();
                     propertiesByNamespace.Add(property.Namespace, pl);
                     namespacesInOrderOfAppearance.Add(property.Namespace);
                 }
@@ -59,7 +59,7 @@ namespace DtaSpy
 
             foreach (var ns in namespacesInOrderOfAppearance)
             {
-                List<BizTalkTrackedMessageContextProperty> props = propertiesByNamespace[ns];
+                List<BizTalkContextProperty> props = propertiesByNamespace[ns];
 
                 this.WriteLengthPrefixedString(ns);
 
@@ -71,7 +71,7 @@ namespace DtaSpy
             }
         }
 
-        protected virtual void WriteProperty(BizTalkTrackedMessageContextProperty property)
+        protected virtual void WriteProperty(BizTalkContextProperty property)
         {
             this.WriteLengthPrefixedString(property.Name);
             this.writer.Write((int)property.PropertyType);

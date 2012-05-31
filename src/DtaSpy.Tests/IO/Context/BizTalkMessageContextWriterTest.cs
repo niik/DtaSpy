@@ -28,10 +28,10 @@ namespace DtaSpy.Tests.IO
         {
             using (rawContext)
             using (var msOut = new MemoryStream())
-            using (var reader = new BizTalkMessageContextReader(rawContext))
-            using (var writer = new BizTalkMessageContextWriter(msOut))
+            using (var reader = new BizTalkContextReader(rawContext))
+            using (var writer = new BizTalkContextWriter(msOut))
             {
-                var properties = reader.ReadContext().ToList();
+                var properties = reader.ReadContextProperties().ToList();
 
                 writer.WriteContext(properties);
 

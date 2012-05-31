@@ -12,22 +12,27 @@ namespace DtaSpy
     /// Experimental context reader. Still havent reverse-engineered the entire format. 
     /// A bit shaky and full of Asserts. Use with caution.
     /// </summary>
-    public class BizTalkMessageContextReader : IDisposable
+    public class BizTalkContextReader : IDisposable
     {
         private Stream stream;
         private BinaryReader reader;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BizTalkMessageContextReader"/> class.
+        /// Initializes a new instance of the <see cref="BizTalkContextReader"/> class.
         /// </summary>
         /// <param name="stream">The stream.</param>
-        public BizTalkMessageContextReader(Stream stream)
+        public BizTalkContextReader(Stream stream)
         {
             this.stream = stream;
             this.reader = new BinaryReader(stream);
         }
 
-        public virtual IEnumerable<BizTalkTrackedMessageContextProperty> ReadContext()
+        public virtual BizTalkPropertyBag ReadContext()
+        {
+            return new BizTalkPropertyBag(this.ReadContextProperties());
+        }
+
+        public virtual IEnumerable<BizTalkContextProperty> ReadContextProperties()
         {
             var clsid = new Guid(reader.ReadBytes(16));
 
@@ -39,7 +44,7 @@ namespace DtaSpy
             Debug.Assert(clsid == new Guid("6c90e0c4-4918-11d3-a242-00c04f60a533"));
 
             int namespaceCount = reader.ReadInt32();
-            
+
             for (int i = 0; i < namespaceCount; i++)
             {
                 string ns = ReadLengthPrefixedString();
@@ -53,11 +58,11 @@ namespace DtaSpy
                 {
                     string propertyName = ReadLengthPrefixedString();
 
-                    ContextPropertyType propertyType = (ContextPropertyType)this.reader.ReadInt32();
+                    PropertyType propertyType = (PropertyType)this.reader.ReadInt32();
 
                     object value = ReadValue();
 
-                    yield return new BizTalkTrackedMessageContextProperty(ns, propertyName, value, propertyType);
+                    yield return new BizTalkContextProperty(ns, propertyName, value, propertyType);
                 }
             }
         }
@@ -165,8 +170,8 @@ namespace DtaSpy
             // but as far as I can tell it's a BSTR. I don't know if we should bubble it up the chain as a string
             // or not. We need more data on this. If you end up here it'd be swell if you could provide some sample
             // data with more complex decimals.
-            
-             return decimal.Parse(ReadLengthPrefixedString(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+
+            return decimal.Parse(ReadLengthPrefixedString(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
         }
 
         private bool ReadBoolean()

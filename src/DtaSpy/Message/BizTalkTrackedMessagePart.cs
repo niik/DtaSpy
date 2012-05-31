@@ -1,30 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 
 namespace DtaSpy
 {
-    public class BizTalkTrackedMessagePart : IDisposable
+    public class BizTalkTrackedMessagePart
     {
         private BizTalkTrackingDb db;
         private int spoolId;
 
-        public BizTalkTrackedMessagePart(BizTalkTrackingDb db, int spoolId)
-        {
-            this.db = db;
-            this.spoolId = spoolId;
-        }
-
         public string PartName { get; set; }
-
         public Guid PartId { get; set; }
-
         public int FragmentCount { get; set; }
-
-        public byte[] ImagePart { get; set; }
-        public byte[] ImagePropBag { get; set; }
-
         public Guid OldPartId { get; set; }
 
         private List<BizTalkFragment> _fragments;
@@ -33,7 +20,7 @@ namespace DtaSpy
         {
             get
             {
-                if (_fragments == null)
+                if (_fragments == null && this.db != null)
                 {
                     _fragments = new List<BizTalkFragment>();
 
@@ -45,14 +32,36 @@ namespace DtaSpy
             }
         }
 
+        public BizTalkPropertyBag Properties { get; set; }
+
+
+        public BizTalkTrackedMessagePart()
+        {
+            this._fragments = new List<BizTalkFragment>();
+            this.Properties = new BizTalkPropertyBag();
+        }
+
+        public BizTalkTrackedMessagePart(BizTalkTrackingDb db, int spoolId)
+        {
+            this.db = db;
+            this.spoolId = spoolId;
+
+            this._fragments = null;
+        }
+
+        internal BizTalkTrackedMessagePart(BizTalkTrackingDb db, int spoolId, BizTalkFragment initialFragment): this(db, spoolId)
+        {
+            this.initialFragment = initialFragment;
+        }
+
         private IEnumerable<BizTalkFragment> LoadFragments()
         {
             int startFragment = 1;
 
-            if (ImagePart != null)
+            if (initialFragment != null)
             {
                 // We already have the first fragment
-                yield return new BizTalkFragment { ImagePart = this.ImagePart };
+                yield return initialFragment;
 
                 // Don't load fragment #1 from db, we already have it.
                 startFragment = 2;
@@ -126,15 +135,6 @@ namespace DtaSpy
             return total;
         }
 
-        public void Dispose()
-        {
-            if (this._fragments != null)
-            {
-                foreach (var fragment in this._fragments)
-                    fragment.Dispose();
-
-                this._fragments = null;
-            }
-        }
+        public BizTalkFragment initialFragment { get; set; }
     }
 }

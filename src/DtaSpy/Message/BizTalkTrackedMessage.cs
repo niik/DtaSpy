@@ -3,52 +3,66 @@ using System.Collections.Generic;
 
 namespace DtaSpy
 {
-    public class BizTalkTrackedMessage : IDisposable
+    public class BizTalkTrackedMessage
     {
         private BizTalkTrackingDb db;
-        
+
         public int SpoolId { get; set; }
         public Guid MessageId { get; set; }
         public Guid BodyPartId { get; set; }
         public int PartCount { get; set; }
 
-        private BizTalkTrackedMessagePart _bodyPart;
         public BizTalkTrackedMessagePart BodyPart
         {
             get
             {
-                if (_bodyPart == null)
-                {
-                    if (cachedParts != null)
-                    {
-                        foreach (var part in cachedParts)
-                        {
-                            if (part.PartId == this.BodyPartId)
-                            {
-                                _bodyPart = part;
-                                return part;
-                            }
-                        }
-                    }
+                if (this.Parts == null)
+                    return null;
 
-                    _bodyPart = this.db.LoadTrackedPart(this.MessageId, this.BodyPartId, this.SpoolId);
+                foreach (var part in this.Parts)
+                {
+                    if (part.PartId == this.BodyPartId)
+                        return part;
                 }
 
-                return _bodyPart;
+                return null;
+            }
+            set
+            {
+
+                foreach (var part in this.Parts)
+                {
+                    if (part.PartId == value.PartId)
+                    {
+                        this.BodyPartId = value.PartId;
+                        return;
+                    }
+                }
+
+                this.Parts.Add(value);
+                this.BodyPartId = value.PartId;
             }
         }
 
-        private List<BizTalkTrackedMessagePart> cachedParts;
+        private List<BizTalkTrackedMessagePart> _parts;
 
-        public IEnumerable<BizTalkTrackedMessagePart> Parts
+        public List<BizTalkTrackedMessagePart> Parts
         {
             get
             {
-                if (cachedParts == null)
-                    cachedParts = new List<BizTalkTrackedMessagePart>(this.db.LoadTrackedParts(this.MessageId, this.SpoolId));
+                if (_parts == null && this.db != null)
+                    _parts = new List<BizTalkTrackedMessagePart>(this.db.LoadTrackedParts(this.MessageId, this.SpoolId));
 
-                return cachedParts;
+                if (_parts == null)
+                    _parts = new List<BizTalkTrackedMessagePart>();
+
+                return _parts;
             }
+        }
+
+        public BizTalkTrackedMessage()
+        {
+            this._parts = new List<BizTalkTrackedMessagePart>();
         }
 
         public BizTalkTrackedMessage(BizTalkTrackingDb db, int spoolId)
@@ -58,15 +72,8 @@ namespace DtaSpy
 
             this.db = db;
             this.SpoolId = spoolId;
-        }
-
-        public void Dispose()
-        {
-            if (this._bodyPart != null)
-            {
-                this._bodyPart.Dispose();
-                this._bodyPart = null;
-            }
+            
+            this._parts = null;
         }
     }
 }

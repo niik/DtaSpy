@@ -32,8 +32,7 @@ namespace DtaSpy.Samples.Export
             {
                 foreach (var message in db.LoadTrackedMessages())
                 {
-                    using (message)
-                        Export(message, options.ExportContext);
+                    Export(message, options.ExportContext);
                 }
             }
             else
@@ -93,7 +92,8 @@ namespace DtaSpy.Samples.Export
         {
             Console.Error.WriteLine("Exporting {" + message.MessageId + "} context");
 
-            using (var context = db.LoadTrackedMessageContext(message.MessageId, message.SpoolId))
+            var context = db.LoadTrackedMessageContext(message.MessageId, message.SpoolId);
+
             using (var writer = new XmlTextWriter(GetMessageContextExportFilename(message), Encoding.UTF8))
             {
                 writer.Formatting = Formatting.Indented;
@@ -125,7 +125,7 @@ namespace DtaSpy.Samples.Export
                     else
                     {
                         writer.WriteStartElement("Property");
-                        
+
                         writer.WriteAttributeString("Name", property.Name);
                         writer.WriteAttributeString("Namespace", property.Namespace);
                         writer.WriteAttributeString("Value", property.Value.ToString());

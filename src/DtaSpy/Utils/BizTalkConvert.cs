@@ -1,47 +1,47 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 
 namespace DtaSpy
 {
     /// <summary>
     /// Utility method for converting from BizTalk block streams.
     /// </summary>
-    public static class BizTalkCompressionConvert
+    public static class BizTalkConvert
     {
         /// <summary>
-        /// Extracts the given tracking data and returns the decompressed content as a byte array
+        /// Deserializes the message part data and returns the decompressed content as a byte array
         /// </summary>
-        public static byte[] Decompress(byte[] buffer)
+        public static byte[] DeserializeMessage(byte[] buffer)
         {
             using (var source = new MemoryStream(buffer))
             using (var destination = new MemoryStream())
             {
-                DecompressTo(source, destination);
-                
+                DeserializeMessageTo(source, destination);
+
                 return destination.ToArray();
             }
         }
 
         /// <summary>
-        /// Extracts the tracking data withing the given stream and returns the 
+        /// Deserializes the message part data within the given stream and returns the 
         /// decompressed content as a byte array
         /// </summary>
-        public static byte[] Decompress(Stream source)
+        public static byte[] DeserializeMessage(Stream source)
         {
             using (var ms = new MemoryStream())
             {
-                DecompressTo(source, ms);
-                
+                DeserializeMessageTo(source, ms);
+
                 return ms.ToArray();
             }
         }
 
         /// <summary>
-        /// Extracts the tracking data within the given source stream and writes the
-        /// decompressed content into the given destination stream.
+        /// Deserializes the message part data within the given source stream and writes the
+        /// content into the given destination stream.
         /// </summary>
-        public static int DecompressTo(Stream source, Stream destination)
+        public static int DeserializeMessageTo(Stream source, Stream destination)
         {
             if (source == null)
                 throw new ArgumentNullException("source");
@@ -66,6 +66,18 @@ namespace DtaSpy
 
                 return total;
             }
+        }
+
+        public static BizTalkPropertyBag DeserializeContext(byte[] buffer)
+        {
+            using (var ms = new MemoryStream(buffer))
+                return DeserializeContext(ms);
+        }
+
+        public static BizTalkPropertyBag DeserializeContext(Stream input)
+        {
+            using (var contextReader = new BizTalkContextReader(input))
+                return contextReader.ReadContext();
         }
     }
 }

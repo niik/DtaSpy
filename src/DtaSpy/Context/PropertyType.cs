@@ -8,7 +8,7 @@ namespace DtaSpy
     /// This is some internal BizTalk thingy which we shouldn't care about (http://msdn.microsoft.com/en-us/library/microsoft.biztalk.message.interop.contextpropertytype(v=bts.10).aspx)
     /// </summary>
     [Flags]
-    public enum ContextPropertyType
+    public enum PropertyType
     {
         PropPredicate = 4,
         PropPromoted = 2,

@@ -183,13 +183,16 @@ namespace DtaSpy
         /// </summary>
         protected BizTalkTrackedMessagePart DeserializeMessagePartFromRecord(IDataReader record, int spoolId)
         {
-            var part = new BizTalkTrackedMessagePart(this, spoolId);
+            var initialFragment = new BizTalkFragment { FragmentNumber = 1 };
+            var part = new BizTalkTrackedMessagePart(this, spoolId, initialFragment);
 
             part.PartName = record.GetString(0);
             part.PartId = record.GetGuid(1);
             part.FragmentCount = record.GetInt32(2);
-            part.ImagePart = (byte[])record.GetValue(3);
-            part.ImagePropBag = (byte[])record.GetValue(4);
+
+            initialFragment.ImagePart = (byte[])record.GetValue(3);
+            part.Properties = BizTalkConvert.DeserializeContext((byte[])record.GetValue(4));
+
             part.OldPartId = record.GetGuid(5);
 
             return part;
@@ -223,7 +226,7 @@ namespace DtaSpy
         /// </summary>
         /// <param name="messageId">The message id.</param>
         /// <param name="spoolId">The spool id.</param>
-        public BizTalkTrackedMessageContext LoadTrackedMessageContext(Guid messageId, int spoolId)
+        public BizTalkPropertyBag LoadTrackedMessageContext(Guid messageId, int spoolId)
         {
             using (var connection = new SqlConnection(this.ConnectionString))
             using (var cmd = CreateStoredProcedureCommand(connection, "ops_LoadTrackedMessageContext"))
@@ -241,11 +244,11 @@ namespace DtaSpy
                     var imgContext = (byte[])reader.GetValue(0);
 
                     using (var ms = new MemoryStream(imgContext))
-                    using (var ctxReader = new BizTalkMessageContextReader(ms))
+                    using (var ctxReader = new BizTalkContextReader(ms))
                     {
-                        var properties = ctxReader.ReadContext();
+                        var properties = ctxReader.ReadContextProperties();
 
-                        return new BizTalkTrackedMessageContext(this, spoolId, new List<BizTalkTrackedMessageContextProperty>(properties));
+                        return new BizTalkPropertyBag(properties);
                     }
                 }
             }
