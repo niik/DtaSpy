@@ -51,22 +51,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Context\ContextPropertyType.cs" />
-    <Compile Include="IO\BizTalkMessageContextReader.cs" />
-    <Compile Include="IO\BizTalkFragmentBlockWriter.cs" />
-    <Compile Include="IBlockWriter.cs" />
-    <Compile Include="IO\BizTalkMessageContextWriter.cs" />
+    <Compile Include="IO\Context\BizTalkMessageContextReader.cs" />
+    <Compile Include="IO\Block\BizTalkBlockWriter.cs" />
+    <Compile Include="IO\Block\IBlockWriter.cs" />
+    <Compile Include="IO\Context\BizTalkMessageContextWriter.cs" />
     <Compile Include="Message\BizTalkFragmentBlock.cs" />
-    <Compile Include="IO\BizTalkFragmentBlockReader.cs" />
+    <Compile Include="IO\Block\BizTalkBlockReader.cs" />
     <Compile Include="Message\BizTalkTrackedMessage.cs" />
     <Compile Include="Context\BizTalkTrackedMessageContext.cs" />
     <Compile Include="Message\BizTalkTrackedMessagePart.cs" />
     <Compile Include="Message\BizTalkFragment.cs" />
     <Compile Include="Utils\BizTalkCompressionConvert.cs" />
-    <Compile Include="IO\BizTalkFragmentStream.cs" />
+    <Compile Include="IO\MessagePart\BizTalkMessagePartStream.cs" />
     <Compile Include="Data\BizTalkTrackingDb.cs" />
     <Compile Include="Context\BizTalkTrackedMessageContextProperty.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IO\BizTalkStreamFragmenter.cs" />
+    <Compile Include="IO\Block\BizTalkBlockStream.cs" />
+    <Compile Include="Utils\StreamMode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

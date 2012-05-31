@@ -49,7 +49,7 @@ namespace DtaSpy
             if (destination == null)
                 throw new ArgumentNullException("destination");
 
-            using (var decoder = new BizTalkFragmentStream(source, CompressionMode.Decompress))
+            using (var decoder = new BizTalkMessagePartStream(source, StreamMode.Read))
             {
                 byte[] buffer = new byte[8192];
 

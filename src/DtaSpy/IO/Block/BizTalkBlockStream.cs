@@ -5,8 +5,15 @@ using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 
 namespace DtaSpy
 {
-    public class BizTalkStreamFragmenter : Stream
+    /// <summary>
+    /// Utility write-only stream for fragmenting a raw message part into BizTalk blocks.
+    /// Use this if you need to get hold of the individual blocks (by supplying your
+    /// own custom IBlockWriter). Use BizTalkFragmentStream for higher level 
+    /// compression/decompression.
+    /// </summary>
+    public class BizTalkBlockStream : Stream
     {
+        // Brute forced estimate, BizTalk never seems to allow more bytes in a single block
         private const int MaxBlockSize = 35840;
         private IBlockWriter blockWriter;
 
@@ -28,12 +35,12 @@ namespace DtaSpy
             set { throw new NotSupportedException(); }
         }
 
-        public BizTalkStreamFragmenter(Stream output)
-            : this(new BizTalkFragmentBlockWriter(output))
+        public BizTalkBlockStream(Stream output)
+            : this(new BizTalkBlockWriter(output))
         {
         }
 
-        public BizTalkStreamFragmenter(IBlockWriter blockWriter)
+        public BizTalkBlockStream(IBlockWriter blockWriter)
         {
             if (blockWriter == null)
                 throw new ArgumentNullException("blockWriter");
@@ -113,7 +120,7 @@ namespace DtaSpy
             {
                 this.deflateBuffer.SetLength(0);
 
-                // Important, we wan't to match the RFC 1950 header used by BizTalk
+                // Important, we want to match the RFC 1950 header used by BizTalk
                 // see http://stackoverflow.com/questions/1316357/zlib-decompression-in-python
                 var deflater = new Deflater(9);
 

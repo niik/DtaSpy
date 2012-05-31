@@ -1,16 +1,14 @@
-﻿using System.IO;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-using System;
-using System.Diagnostics;
+﻿using System;
+using System.IO;
 
 namespace DtaSpy
 {
-    public class BizTalkFragmentBlockWriter : IBlockWriter
+    public class BizTalkBlockWriter : IBlockWriter
     {
         public Stream output { get; set; }
         private static readonly byte[] zeroBuf = new byte[] { 0, 0, 0 };
 
-        public BizTalkFragmentBlockWriter(Stream output)
+        public BizTalkBlockWriter(Stream output)
         {
             this.output = output;
         }

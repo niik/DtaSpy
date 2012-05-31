@@ -113,7 +113,7 @@ namespace DtaSpy
             foreach (var fragment in fragments)
             {
                 using (var ds = new MemoryStream(fragment.ImagePart))
-                using (var bz = new BizTalkFragmentStream(ds, CompressionMode.Decompress))
+                using (var bz = new BizTalkMessagePartStream(ds, StreamMode.Read))
                 {
                     while ((c = bz.Read(buf, 0, buf.Length)) > 0)
                     {

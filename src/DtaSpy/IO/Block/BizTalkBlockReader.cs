@@ -1,27 +1,25 @@
-﻿using System.IO;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-using System;
-using System.Diagnostics;
+﻿using System;
+using System.IO;
 
 namespace DtaSpy
 {
-    public class BizTalkFragmentBlockReader
+    public class BizTalkBlockReader
     {
         private Stream source;
         private BinaryReader reader;
 
-        public BizTalkFragmentBlockReader(Stream source)
+        public BizTalkBlockReader(Stream source)
         {
             this.source = source;
             this.reader = new BinaryReader(source);
         }
 
-        public BizTalkFragmentBlockReader(byte[] buffer)
+        public BizTalkBlockReader(byte[] buffer)
             : this(buffer, 0, buffer.Length)
         {
         }
 
-        public BizTalkFragmentBlockReader(byte[] buffer, int offset, int count)
+        public BizTalkBlockReader(byte[] buffer, int offset, int count)
         {
             this.source = new MemoryStream(buffer, offset, count, false);
             this.reader = new BinaryReader(this.source);

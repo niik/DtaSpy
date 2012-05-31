@@ -20,6 +20,10 @@ namespace DtaSpy.Tests.IO
             AssertIdenticalSerialization(rawContext);
         }
 
+        /// <summary>
+        /// Asserts that a stream which is first deserialized by a context reader and then serialized
+        /// with a context writer is byte-wise identical to the raw input stream.
+        /// </summary>
         private static void AssertIdenticalSerialization(Stream rawContext)
         {
             using (rawContext)

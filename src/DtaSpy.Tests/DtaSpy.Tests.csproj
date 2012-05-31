@@ -51,9 +51,9 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IO\BizTalkFragmentStreamTest.cs" />
-    <Compile Include="IO\BizTalkMessageContextReaderTest.cs" />
-    <Compile Include="IO\BizTalkMessageContextWriterTest.cs" />
+    <Compile Include="IO\MessagePart\BizTalkMessagePartStreamTests.cs" />
+    <Compile Include="IO\Context\BizTalkMessageContextReaderTest.cs" />
+    <Compile Include="IO\Context\BizTalkMessageContextWriterTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ResourceHelper.cs" />
   </ItemGroup>

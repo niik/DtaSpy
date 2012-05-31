@@ -8,7 +8,7 @@ using System.Text;
 namespace DtaSpy.Tests
 {
     [TestClass]
-    public class BizTalkFragmentStreamTest
+    public class BizTalkMessagePartStreamTests
     {
         /// <summary>
         /// A byte array representing a fragment stream consisting of a single 'X' char.
@@ -35,7 +35,7 @@ namespace DtaSpy.Tests
         /// A byte array representing a fragment stream consisting of a 65k 'X' characters
         /// in two blocks
         /// </summary>
-        private static byte[] doubleBlock65535XBuffer = new byte[] {
+        private static byte[] doubleBlock65536XBuffer = new byte[] {
             0x01, 0x00, 0x00, 0x00, 0x00, 0x8C, 0x00, 0x00, 0x3A, 0x00, 0x00, 0x00, // Block #1 header
             0x78, 0xDA, 0xED, 0xC1, 0x81, 0x00, 0x00, 0x00, 0x00, 0xC3, 0x20, 0xCD, // Block #1 content
             0xF9, 0x93, 0x1C, 0xE4, 0x55, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // ...
@@ -55,7 +55,7 @@ namespace DtaSpy.Tests
         public void UncompressedSingleBlockStreamTest()
         {
             using (var ms = new MemoryStream(singleXBuffer))
-            using (var bs = new BizTalkFragmentStream(ms, CompressionMode.Decompress))
+            using (var bs = new BizTalkMessagePartStream(ms, StreamMode.Read))
             using (var sr = new StreamReader(bs))
             {
                 Assert.AreEqual("X", sr.ReadToEnd());
@@ -66,7 +66,7 @@ namespace DtaSpy.Tests
         public void CompressedSingleBlockStreamTest()
         {
             using (var ms = new MemoryStream(singleBlock1024XBuffer))
-            using (var bs = new BizTalkFragmentStream(ms, CompressionMode.Decompress))
+            using (var bs = new BizTalkMessagePartStream(ms, StreamMode.Read))
             using (var sr = new StreamReader(bs))
             {
                 string content = sr.ReadToEnd();
@@ -81,7 +81,7 @@ namespace DtaSpy.Tests
         [TestMethod]
         public void CompressedSingleBlockStructureTest()
         {
-            var reader = new BizTalkFragmentBlockReader(singleBlock1024XBuffer);
+            var reader = new BizTalkBlockReader(singleBlock1024XBuffer);
 
             var b1 = reader.ReadBlock();
             Assert.IsNotNull(b1);
@@ -96,7 +96,7 @@ namespace DtaSpy.Tests
         [TestMethod]
         public void CompressedMultiBlockStructureTest()
         {
-            var reader = new BizTalkFragmentBlockReader(doubleBlock65535XBuffer);
+            var reader = new BizTalkBlockReader(doubleBlock65536XBuffer);
 
             var b1 = reader.ReadBlock();
             Assert.IsNotNull(b1);
@@ -126,7 +126,7 @@ namespace DtaSpy.Tests
 
             using (var ms = new MemoryStream())
             {
-                using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Compress))
+                using (var bz = new BizTalkMessagePartStream(ms, StreamMode.Write))
                 using (var sw = new StreamWriter(bz))
                 {
                     sw.Write(content);
@@ -139,7 +139,7 @@ namespace DtaSpy.Tests
             Assert.AreEqual(0, buffer[0]);
 
             using (var ms = new MemoryStream(buffer))
-            using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Decompress))
+            using (var bz = new BizTalkMessagePartStream(ms, StreamMode.Read))
             using (var sr = new StreamReader(bz))
             {
                 Assert.AreEqual(content, sr.ReadToEnd());
@@ -156,7 +156,7 @@ namespace DtaSpy.Tests
 
             using (var ms = new MemoryStream())
             {
-                using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Compress))
+                using (var bz = new BizTalkMessagePartStream(ms, StreamMode.Write))
                 using (var sw = new StreamWriter(bz))
                 {
                     sw.Write(content);
@@ -169,7 +169,7 @@ namespace DtaSpy.Tests
             Assert.AreEqual(1, buffer[0]);
 
             using (var ms = new MemoryStream(buffer))
-            using (var bz = new BizTalkFragmentStream(ms, CompressionMode.Decompress))
+            using (var bz = new BizTalkMessagePartStream(ms, StreamMode.Read))
             using (var sr = new StreamReader(bz))
             {
                 Assert.AreEqual(content, sr.ReadToEnd());

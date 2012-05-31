@@ -18,7 +18,7 @@ namespace DtaSpy.Tests.IO
             var rawContext = ResourceHelper.LoadTestResource("Context/IM.BizTalk.Schemas.All.AllPropertiesSet/1.1/9c38fa72-868f-46aa-8a73-8d00da713700.bin");
 
             using (rawContext)
-            using(var reader = new BizTalkMessageContextReader(rawContext))
+            using (var reader = new BizTalkMessageContextReader(rawContext))
             {
                 var properties = reader.ReadContext().ToList();
 
@@ -26,21 +26,21 @@ namespace DtaSpy.Tests.IO
 
                 //<anyURIValue>http://www.example.com</anyURIValue>
                 Assert.AreEqual("http://www.example.com", properties.First(p => p.Name.StartsWith("anyURI")).Value);
-                
+
                 //<booleanValue>true</booleanValue>
                 Assert.AreEqual(true, properties.First(p => p.Name.StartsWith("boolean")).Value);
-                
+
                 //<byteValue>125</byteValue>
                 Assert.AreEqual((sbyte)125, properties.First(p => p.Name.StartsWith("byte")).Value);
-                
+
                 //<dateValue>1999-05-31</dateValue>
                 Assert.AreEqual(new DateTime(1999, 5, 31), properties.First(p => p.Name == "dateProperty").Value);
-                
+
                 //<dateTimeValue>1999-05-31T13:20:00.000-05:00</dateTimeValue>
                 // AFAICT OLE dates doesn't support timezones so I guess the test data above has been generated on a computer with
                 // a timezone setting of -5hours. No guarantees though. The date support is shaky at best.
                 Assert.AreEqual(new DateTime(1999, 5, 31, 18, 20, 00), properties.First(p => p.Name.StartsWith("dateTime")).Value);
-                
+
                 //<decimalValue>10.4</decimalValue>
                 Assert.AreEqual(10.4M, properties.First(p => p.Name.StartsWith("decimal")).Value);
 
@@ -62,13 +62,13 @@ namespace DtaSpy.Tests.IO
 
                 //<IDValue>IDValue0</IDValue>
                 Assert.AreEqual("IDValue0", properties.First(p => p.Name.StartsWith("ID")).Value);
-                
+
                 //<IDREFValue>IDREFValue0</IDREFValue>
                 Assert.AreEqual("IDREFValue0", properties.First(p => p.Name.StartsWith("IDREF")).Value);
-                
+
                 //<intValue>10</intValue>
                 Assert.AreEqual(10, properties.First(p => p.Name.StartsWith("intProperty")).Value);
-                
+
                 //<integerValue>100</integerValue>
                 Assert.AreEqual(100M, properties.First(p => p.Name.StartsWith("integerProperty")).Value);
 
@@ -89,7 +89,7 @@ namespace DtaSpy.Tests.IO
 
                 //<nonNegativeIntegerValue>10</nonNegativeIntegerValue>
                 Assert.AreEqual(10M, properties.First(p => p.Name.StartsWith("nonNegativeInteger")).Value);
-                
+
                 //<nonPositiveIntegerValue>-10</nonPositiveIntegerValue>
                 Assert.AreEqual(-10M, properties.First(p => p.Name.StartsWith("nonPositiveInteger")).Value);
 
@@ -116,10 +116,10 @@ namespace DtaSpy.Tests.IO
 
                 //<tokenValue>tokenValue_0</tokenValue>
                 Assert.AreEqual("tokenValue_0", properties.First(p => p.Name.StartsWith("token")).Value);
-                
+
                 //<unsignedByteValue>125</unsignedByteValue>
                 Assert.AreEqual((byte)125, properties.First(p => p.Name.StartsWith("unsignedByte")).Value);
-                
+
                 //<unsignedIntValue>10</unsignedIntValue>
                 Assert.AreEqual((uint)10, properties.First(p => p.Name.StartsWith("unsignedInt")).Value);
 

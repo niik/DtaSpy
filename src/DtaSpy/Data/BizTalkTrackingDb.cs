@@ -276,6 +276,7 @@ namespace DtaSpy
                     var fragment = new BizTalkFragment();
 
                     fragment.ImagePart = (byte[])reader.GetValue(0);
+                    fragment.FragmentNumber = fragmentNumber;
 
                     return fragment;
                 }

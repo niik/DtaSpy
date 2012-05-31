@@ -20,16 +20,14 @@
 
 using System;
 using System.IO;
-using System.IO.Compression;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using ICSharpCode.SharpZipLib.Zip.Compression;
 
 namespace DtaSpy
 {
     /// <summary>
-    /// Reads and if-need-be decompresses BizTalk fragment streams.
+    /// A compression stream for reading or writing from/to BizTalk message part fragment format.
     /// </summary>
-    public class BizTalkFragmentStream : Stream
+    public class BizTalkMessagePartStream : Stream
     {
         private const int MaxBlockSize = 35840;
 
@@ -39,12 +37,11 @@ namespace DtaSpy
         private FragmentBlock currentBlock;
         private MemoryStream readBuffer;
 
-        private BizTalkFragmentBlockWriter writer;
-        private BizTalkStreamFragmenter fragmenter;
-        private BizTalkFragmentBlockReader reader;
+        private BizTalkBlockStream writeStream;
+        private BizTalkBlockReader reader;
 
         private Stream innerStream;
-        private CompressionMode compressionMode;
+        private StreamMode streamMode;
         private int currentBlockRead;
 
         /// <summary>
@@ -53,7 +50,7 @@ namespace DtaSpy
         /// <returns>true if the stream supports reading; otherwise, false.</returns>
         public override bool CanRead
         {
-            get { return !isClosed && !isDone && compressionMode == CompressionMode.Decompress; }
+            get { return !isClosed && !isDone && streamMode == StreamMode.Read; }
         }
 
         /// <summary>
@@ -71,7 +68,7 @@ namespace DtaSpy
         /// <returns>true if the stream supports writing; otherwise, false.</returns>
         public override bool CanWrite
         {
-            get { return !isClosed && innerStream.CanWrite && compressionMode == CompressionMode.Compress; }
+            get { return !isClosed && innerStream.CanWrite && streamMode == StreamMode.Write; }
         }
 
         /// <summary>
@@ -92,35 +89,34 @@ namespace DtaSpy
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BizTalkFragmentStream"/> class.
+        /// Initializes a new instance of the <see cref="BizTalkMessagePartStream"/> class.
         /// </summary>
         /// <param name="stream">The stream from which to read (or write if in compression mode).</param>
         /// <param name="mode">The compression mode.</param>
-        public BizTalkFragmentStream(Stream stream, CompressionMode mode)
+        public BizTalkMessagePartStream(Stream stream, StreamMode mode)
         {
             this.innerStream = stream;
-            this.compressionMode = mode;
+            this.streamMode = mode;
 
-            if (mode == CompressionMode.Compress)
+            if (mode == StreamMode.Write)
             {
-                this.writer = new BizTalkFragmentBlockWriter(this.innerStream);
-                this.fragmenter = new BizTalkStreamFragmenter(this.writer);
+                this.writeStream = new BizTalkBlockStream(this.innerStream);
             }
-            else if (mode == CompressionMode.Decompress)
+            else if (mode == StreamMode.Read)
             {
-                this.reader = new BizTalkFragmentBlockReader(stream);
+                this.reader = new BizTalkBlockReader(stream);
                 this.readBuffer = new MemoryStream();
             }
             else
             {
-                throw new ArgumentException("Unknown compression mode specified: " + mode, "mode");
+                throw new ArgumentException("Unknown stream mode specified: " + mode, "mode");
             }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (this.compressionMode != CompressionMode.Decompress)
-                throw new InvalidOperationException("Cannot read from compression stream");
+            if (this.streamMode != StreamMode.Read)
+                throw new InvalidOperationException("Cannot read from write stream");
 
             if (this.isDone)
                 return 0;
@@ -187,14 +183,14 @@ namespace DtaSpy
             if (this.isClosed)
                 return;
 
-            if (this.compressionMode == CompressionMode.Decompress)
+            if (this.streamMode == StreamMode.Read)
             {
                 if (this.currentBlock != null)
                     this.currentBlock = null;
             }
-            else if (this.compressionMode == CompressionMode.Compress)
+            else if (this.streamMode == StreamMode.Write)
             {
-                this.fragmenter.Close();
+                this.writeStream.Close();
             }
 
             this.isClosed = true;
@@ -202,15 +198,15 @@ namespace DtaSpy
 
         public override void Flush()
         {
-            if (this.compressionMode != CompressionMode.Compress)
-                throw new InvalidOperationException("Cannot flush decompression stream");
+            if (this.streamMode != StreamMode.Write)
+                throw new InvalidOperationException("Cannot flush read stream");
 
-            this.fragmenter.Flush();
+            this.writeStream.Flush();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotSupportedException("Cannot seek in compression streams");
+            throw new NotSupportedException("Seek not supported");
         }
 
         public override void SetLength(long value)
@@ -220,10 +216,10 @@ namespace DtaSpy
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            if (this.compressionMode != CompressionMode.Compress)
-                throw new InvalidOperationException("Cannot write to compression stream");
+            if (this.streamMode != StreamMode.Write)
+                throw new InvalidOperationException("Cannot write to read stream");
 
-            this.fragmenter.Write(buffer, offset, count);
+            this.writeStream.Write(buffer, offset, count);
         }
     }
 }
