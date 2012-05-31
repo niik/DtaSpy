@@ -54,5 +54,10 @@ namespace DtaSpy
             this.Value = value;
             this.PropertyType = propertyType;
         }
+
+        public override string ToString()
+        {
+            return Convert.ToString(Value);
+        }
     }
 }
