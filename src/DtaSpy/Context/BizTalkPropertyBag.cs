@@ -24,6 +24,7 @@ using System.Diagnostics;
 
 namespace DtaSpy
 {
+    [DebuggerDisplay("PropertyBag: {Count} properties")]
     public class BizTalkPropertyBag: ICollection<BizTalkContextProperty>
     {
         public List<BizTalkContextProperty> Properties { get; set; }
