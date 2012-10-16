@@ -4,8 +4,8 @@
     <id>$id$</id>
     <version>$version$</version>
     <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
+    <authors>Markus Olsson</authors>
+    <owners>Markus Olsson</owners>
     <licenseUrl>http://opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>https://github.com/markus-olsson/DtaSpy</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

@@ -6,9 +6,8 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DtaSpy")]
-[assembly: AssemblyDescription("Standalone access (as in no BizTalk installation neccessary) to tracked messages and properties in BizTalk tracking databases.")]
+[assembly: AssemblyDescription("Library for standalone access to tracked messages and properties in BizTalk tracking databases")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Marcus Olsson")]
 [assembly: AssemblyProduct("DtaSpy")]
 [assembly: AssemblyCopyright("Copyright © Markus Olsson 2011-2012")]
 [assembly: AssemblyTrademark("")]
