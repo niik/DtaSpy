@@ -11,3 +11,4 @@
 msbuild.log
 *.psess
 _ReSharper*
+*.nupkg
