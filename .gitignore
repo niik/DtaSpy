@@ -10,3 +10,4 @@
 /packages/
 msbuild.log
 *.psess
+_ReSharper*
