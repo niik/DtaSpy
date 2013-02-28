@@ -191,7 +191,8 @@ namespace DtaSpy
             // or not. We need more data on this. If you end up here it'd be swell if you could provide some sample
             // data with more complex decimals.
 
-            return decimal.Parse(ReadLengthPrefixedString(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+            string s = ReadLengthPrefixedString().Replace(",", ".");
+            return decimal.Parse(s, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
         }
 
         private bool ReadBoolean()
