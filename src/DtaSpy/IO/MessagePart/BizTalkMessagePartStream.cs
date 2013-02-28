@@ -76,16 +76,24 @@ namespace DtaSpy
         /// </summary>
         /// <exception cref="T:System.NotSupportedException">A class derived from Stream does not support seeking.</exception>
         /// <exception cref="T:System.ObjectDisposedException">Methods were called after the stream was closed.</exception>
-        public override long Length { get { throw new NotSupportedException(); } }
-
+        public override long Length
+        {
+            get
+            {
+                return innerStream.Length; // throw new NotSupportedException(); 
+            }
+        }
         /// <summary>
         /// Gets or sets the position within the current stream. Not supported by BizTalkFragmentStream.
         /// </summary>
         /// <exception cref="T:System.NotSupportedException">The stream does not support seeking.</exception>
         public override long Position
         {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
+            get { return innerStream.Position; }
+            set
+            {
+                innerStream.Position = value;// throw new NotSupportedException();
+            }
         }
 
         /// <summary>
@@ -206,7 +214,7 @@ namespace DtaSpy
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotSupportedException("Seek not supported");
+            return innerStream.Seek(0, SeekOrigin.Begin);
         }
 
         public override void SetLength(long value)
